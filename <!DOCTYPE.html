@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Цифровой Замок</title>
+    <style>
+        /* Cyberpunk / Dark Mode Style */
+        body {
+            background-color: #121212;
+            color: #FFFFFF; /* Белый для лучшей читаемости */
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        :root {
+            --neon-pink: #FF003C;
+            --neon-blue: #00FFFF;
+            --neon-green: #39FF14;
+        }
+
+        .screen {
+            display: none;
+            max-width: 800px;
+            padding: 20px;
+            border: 2px solid var(--neon-green);
+            border-radius: 10px;
+            box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green);
+            background-color: rgba(18, 18, 18, 0.85); /* Полупрозрачная плашка для читаемости, матрица просвечивает */
+            animation: neon-glow 2s infinite alternate ease-in-out, fadeIn 1s ease-in forwards;
+        }
+
+        .active {
+            display: block;
+        }
+
+        h1, h2 {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue);
+            animation: pulse 2s infinite alternate ease-in-out;
+        }
+
+        .green {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green), 0 0 10px var(--neon-green), 0 0 15px var(--neon-green);
+        }
+
+        .red {
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink), 0 0 10px var(--neon-pink), 0 0 15px var(--neon-pink);
+        }
+
+        .white {
+            color: #FFFFFF;
+            text-shadow: 0 0 5px #FFFFFF, 0 0 10px #FFFFFF;
+        }
+
+        button {
+            background: none;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--neon-green);
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: var(--neon-green);
+            color: #121212;
+            box-shadow: 0 0 20px var(--neon-green), 0 0 30px var(--neon-green);
+            transform: scale(1.05) rotate(1deg); /* Красивая анимация hover */
+            animation: button-pulse 0.5s infinite alternate;
+        }
+
+        button:disabled {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            cursor: not-allowed;
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* Glitch Effect (улучшенный) */
+        .glitch {
+            position: relative;
+            color: white;
+            letter-spacing: 1px;
+            font-weight: bold;
+            animation: glitch 1s infinite steps(1);
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch::before {
+            color: var(--neon-blue);
+            left: 2px;
+            text-shadow: -2px 0 var(--neon-pink);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            color: var(--neon-pink);
+            left: -2px;
+            text-shadow: 2px 0 var(--neon-blue);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(132px, auto, 101px, 30px); }
+            5% { clip: rect(17px, auto, 94px, 30px); }
+            10% { clip: rect(40px, auto, 66px, 30px); }
+            15% { clip: rect(87px, auto, 82px, 30px); }
+            20% { clip: rect(137px, auto, 61px, 30px); }
+            25% { clip: rect(34px, auto, 14px, 30px); }
+            30% { clip: rect(133px, auto, 74px, 30px); }
+            35% { clip: rect(76px, auto, 68px, 30px); }
+            40% { clip: rect(59px, auto, 130px, 30px); }
+            45% { clip: rect(29px, auto, 84px, 30px); }
+            50% { clip: rect(22px, auto, 67px, 30px); }
+            55% { clip: rect(67px, auto, 62px, 30px); }
+            60% { clip: rect(10px, auto, 105px, 30px); }
+            65% { clip: rect(78px, auto, 115px, 30px); }
+            70% { clip: rect(84px, auto, 39px, 30px); }
+            75% { clip: rect(87px, auto, 136px, 30px); }
+            80% { clip: rect(82px, auto, 131px, 30px); }
+            85% { clip: rect(104px, auto, 13px, 30px); }
+            90% { clip: rect(99px, auto, 88px, 30px); }
+            95% { clip: rect(20px, auto, 7px, 30px); }
+            100% { clip: rect(121px, auto, 85px, 30px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(65px, auto, 100px, 30px); }
+            5% { clip: rect(52px, auto, 117px, 30px); }
+            10% { clip: rect(87px, auto, 61px, 30px); }
+            15% { clip: rect(52px, auto, 87px, 30px); }
+            20% { clip: rect(135px, auto, 47px, 30px); }
+            25% { clip: rect(42px, auto, 84px, 30px); }
+            30% { clip: rect(63px, auto, 142px, 30px); }
+            35% { clip: rect(85px, auto, 113px, 30px); }
+            40% { clip: rect(96px, auto, 29px, 30px); }
+            45% { clip: rect(125px, auto, 97px, 30px); }
+            50% { clip: rect(31px, auto, 93px, 30px); }
+            55% { clip: rect(68px, auto, 86px, 30px); }
+            60% { clip: rect(73px, auto, 36px, 30px); }
+            65% { clip: rect(10px, auto, 60px, 30px); }
+            70% { clip: rect(121px, auto, 9px, 30px); }
+            75% { clip: rect(69px, auto, 84px, 30px); }
+            80% { clip: rect(40px, auto, 160px, 30px); }
+            85% { clip: rect(87px, auto, 82px, 30px); }
+            90% { clip: rect(37px, auto, 106px, 30px); }
+            95% { clip: rect(58px, auto, 122px, 30px); }
+            100% { clip: rect(143px, auto, 153px, 30px); }
+        }
+
+        @keyframes neon-glow {
+            from { box-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); }
+            to { box-shadow: 0 0 30px var(--neon-green), 0 0 50px var(--neon-green); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            from { text-shadow: 0 0 10px var(--neon-blue); }
+            to { text-shadow: 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue); }
+        }
+
+        @keyframes button-pulse {
+            from { box-shadow: 0 0 10px var(--neon-green); }
+            to { box-shadow: 0 0 20px var(--neon-green); }
+        }
+
+        /* Matrix Background */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            animation: matrix-fade 5s infinite alternate;
+        }
+
+        @keyframes matrix-fade {
+            from { opacity: 0.8; }
+            to { opacity: 0.6; }
+        }
+
+        /* Квиз стили */
+        .quiz-question {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .quiz-question label {
+            display: block;
+            margin: 5px 0;
+        }
+
+        .quiz-question input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+
+    <!-- Экран 1: Обложка -->
+    <div id="screen1" class="screen active">
+        <h1 class="glitch" data-text="🏰 ЦИФРОВОЙ ЗАМОК">🏰 ЦИФРОВОЙ ЗАМОК</h1>
+        <p class="white">Твой аккаунт стоит дороже, чем ты думаешь. Защити его.</p>
+        <button onclick="nextScreen(1)">НАЧАТЬ ЗАЩИТУ ></button>
+    </div>
+
+    <!-- Экран 2: Интро -->
+    <div id="screen2" class="screen">
+        <h2 class="glitch" data-text='"Мне скрывать нечего" — самая опасная ложь.'>"Мне скрывать нечего" — самая опасная ложь.</h2>
+        <p class="white">Твои данные — это новая валюта.</p>
+        <div>
+            <p class="red">💀 Репутация: Твои переписки могут слить ради смеха.</p>
+            <p class="red">💸 Финансы: От твоего имени попросят деньги у друзей.</p>
+            <p class="red">📍 Жизнь: Сталкеры узнают твой адрес по фото.</p>
+        </div>
+        <p class="green">🔥 Твоя миссия: Построить «Цифровой Замок» за 5 шагов.</p>
+        <button onclick="prevScreen(2)">Назад</button>
+        <button onclick="nextScreen(2)">Далее</button>
+    </div>
+
+    <!-- Экран 3: Уровень 1 — Ворота (Пароли) -->
+    <div id="screen3" class="screen">
+        <h2>Уровень 1 — Ворота (Пароли)</h2>
+        <p class="white">Пароль «123456» — это как оставить ключи в двери.</p>
+        <p class="green">🛡️ Формула Идеального Пароля:</p>
+        <ol class="white">
+            <li>Длина: 12+ символов.</li>
+            <li>Микс: Аа + 7 + #?!</li>
+            <li>Хаос: Никаких дат рождения.</li>
+        </ol>
+        <p class="green">💡 Лайфхак: Фразы-ассоциации.</p>
+        <p class="red">🔴 Плохо: Pasha2008</p>
+        <p class="green">🟢 Отлично: I_L0ve_Pizza_With_Pineapple!</p>
+        <p class="green">⚡ ДЕЙСТВИЕ: Включи 2FA (Двухфакторную аутентификацию).</p>
+        <p class="white">Это второй замок. Даже если украдут ключ (пароль), дверь не откроют без твоего отпечатка (SMS).</p>
+        <button onclick="prevScreen(3)">Назад</button>
+        <button onclick="nextScreen(3)">Далее</button>
+    </div>
+
+    <!-- Экран 4: Уровень 2 — Стены (Приватность) -->
+    <div id="screen4" class="screen">
+        <h2>Уровень 2 — Стены (Приватность)</h2>
+        <ol>
+            <li class="green">🟢 Центр (Только Я): Пароли, геопозиция (Real-time), личный телефон.</li>
+            <li class="white">🟡 Средний круг (Близкие): Личные фото, сторис "для близких", настоящие эмоции.</li>
+            <li class="red">🔴 Внешний круг (Все): Аватарка, никнейм, общее био.</li>
+        </ol>
+        <p class="red">🚫 STOP-LIST для постинга (Красная рамка):</p>
+        <ul class="red">
+            <li>🎫 Билеты (штрихкод = твои данные).</li>
+            <li>🏠 Геотег дома/школы.</li>
+            <li>💎 Дорогие покупки (приманка).</li>
+        </ul>
+        <button onclick="prevScreen(4)">Назад</button>
+        <button onclick="nextScreen(4)">Далее</button>
+    </div>
+
+    <!-- Экран 5: Уровень 3 — Оборона (Анти-Фишинг) -->
+    <div id="screen5" class="screen">
+        <h2>Уровень 3 — Оборона (Анти-Фишинг)</h2>
+        <p class="white">Хакеры ломают не системы, а людей. (Социальная инженерия).</p>
+        <p>Сценарий: «Голосование» (Вид чата):</p>
+        <p class="white">📩 Алиса (взломана): "Привет! Проголосуй за меня плиз, вот ссылка..."</p>
+        <p class="red">❌ Ошибка: Переход -> Ввод пароля -> Потеря аккаунта.</p>
+        <p class="green">✅ Реальность: Ссылка фейк. Аккаунт угнан.</p>
+        <p>Правило трех «НЕ»:</p>
+        <ol class="white">
+            <li>НЕ переходи по ссылкам из ЛС без проверки.</li>
+            <li>НЕ вводи пароли на внешних сайтах.</li>
+            <li>НЕ верь срочности ("Аккаунт удалят через час!").</li>
+        </ol>
+        <button onclick="prevScreen(5)">Назад</button>
+        <button onclick="nextScreen(5)">Далее</button>
+    </div>
+
+    <!-- Экран 6: Уровень 4 — Щит (Анти-буллинг) -->
+    <div id="screen6" class="screen">
+        <h2>Уровень 4 — Щит (Анти-буллинг)</h2>
+        <p class="white">Травля — это не твоя вина. Это атака.</p>
+        <p>Алгоритм действий (Стиль карточек):</p>
+        <ol class="green">
+            <li>🔇 Mute: Не корми тролля. Им нужна реакция.</li>
+            <li>📸 Screen: Скриншот — твоя главная улика. Делай сразу.</li>
+            <li>🚫 Ban: Блок + Репорт.</li>
+            <li>🆘 Help: Расскажи взрослым. Шантаж — дело полиции.</li>
+        </ol>
+        <button onclick="prevScreen(6)">Назад</button>
+        <button onclick="nextScreen(6)">Далее</button>
+    </div>
+
+    <!-- Экран 7: Интерактивный Квиз по Безопасности -->
+    <div id="screen7" class="screen">
+        <h2>Интерактивный Квиз по Безопасности</h2>
+        <p class="white">Ответь правильно на все вопросы, чтобы пройти дальше.</p>
+        <form id="quizForm">
+            <div class="quiz-question white">
+                <p>1. Какой пароль является наиболее безопасным?</p>
+                <label><input type="radio" name="q1" value="a"> a) 123456</label>
+                <label><input type="radio" name="q1" value="b"> b) Pasha2008</label>
+                <label><input type="radio" name="q1" value="c"> c) I_L0ve_Pizza_With_Pineapple!</label>
+                <div class="feedback" id="fb1"></div>
+            </div>
+            <div class="quiz-question white">
+                <p>2. Что делать, если пришел email с просьбой срочно ввести пароль?</p>
+                <label><input type="radio" name="q2" value="a"> a) Ввести пароль</label>
+                <label><input type="radio" name="q2" value="b"> b) Игнорировать и удалить</label>
+                <label><input type="radio" name="q2" value="c"> c) Поделиться с друзьями</label>
+                <div class="feedback" id="fb2"></div>
+            </div>
+            <div class="quiz-question white">
+                <p>3. Можно ли постить геотег дома?</p>
+                <label><input type="radio" name="q3" value="a"> a) Да, если красиво</label>
+                <label><input type="radio" name="q3" value="b"> b) Нет, это опасно</label>
+                <label><input type="radio" name="q3" value="c"> c) Только для друзей</label>
+                <div class="feedback" id="fb3"></div>
+            </div>
+            <div class="quiz-question white">
+                <p>4. Что такое 2FA?</p>
+                <label><input type="radio" name="q4" value="a"> a) Два пароля</label>
+                <label><input type="radio" name="q4" value="b"> b) Двухфакторная аутентификация</label>
+                <label><input type="radio" name="q4" value="c"> c) Двойной аккаунт</label>
+                <div class="feedback" id="fb4"></div>
+            </div>
+            <div class="quiz-question white">
+                <p>5. Что делать при кибербуллинге?</p>
+                <label><input type="radio" name="q5" value="a"> a) Ответить тем же</label>
+                <label><input type="radio" name="q5" value="b"> b) Заблокировать и сообщить</label>
+                <label><input type="radio" name="q5" value="c"> c) Игнорировать полностью</label>
+                <div class="feedback" id="fb5"></div>
+            </div>
+        </form>
+        <button onclick="prevScreen(7)">Назад</button>
+        <button id="nextBtn7" onclick="nextScreen(7)" disabled>Далее</button>
+    </div>
+
+    <!-- Экран 8: Финал -->
+    <div id="screen8" class="screen">
+        <h2>Финал (Настройки)</h2>
+        <p class="green">🛠️ Где настроить приватность:</p>
+        <table style="width:100%; color:#FFFFFF; border-collapse: collapse;">
+            <tr><th>Соцсеть</th><th>Путь</th><th>Настройка</th></tr>
+            <tr><td>VK</td><td>Настройки → Приватность</td><td>Поставь "Только друзья" везде</td></tr>
+            <tr><td>Telegram</td><td>Конфиденциальность</td><td>Номер телефона → "Никто"</td></tr>
+            <tr><td>TikTok</td><td>Конфиденциальность</td><td>Приватный аккаунт</td></tr>
+        </table>
+        <p class="white">Итог: Твой «Цифровой Замок» крепок настолько, насколько ты внимателен.</p>
+        <button onclick="shareGuide()">Поделиться гайдом с другом 📤</button>
+        <button onclick="prevScreen(8)">Назад</button>
+    </div>
+
+    <script>
+        // Навигация между экранами
+        function nextScreen(current) {
+            document.getElementById(`screen${current}`).classList.remove('active');
+            document.getElementById(`screen${current + 1}`).classList.add('active');
+        }
+
+        function prevScreen(current) {
+            document.getElementById(`screen${current}`).classList.remove('active');
+            document.getElementById(`screen${current - 1}`).classList.add('active');
+        }
+
+        // Поделиться гайдом
+        function shareGuide() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Цифровой Замок',
+                    text: 'Защити свой аккаунт! Гайд для подростков.',
+                    url: window.location.href
+                }).then(() => console.log('Shared!'))
+                  .catch(console.error);
+            } else {
+                alert('Поделись ссылкой: ' + window.location.href);
+            }
+        }
+
+        // Логика для квиза
+        const quizAnswers = {
+            q1: 'c', // I_L0ve_Pizza_With_Pineapple!
+            q2: 'b', // Игнорировать и удалить
+            q3: 'b', // Нет, это опасно
+            q4: 'b', // Двухфакторная аутентификация
+            q5: 'b'  // Заблокировать и сообщить
+        };
+
+        const quizRadios = document.querySelectorAll('#quizForm input[type="radio"]');
+        const nextBtn = document.getElementById('nextBtn7');
+
+        function checkAnswers() {
+            let allCorrect = true;
+            for (let i = 1; i <= 5; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                const fb = document.getElementById(`fb${i}`);
+                if (selected) {
+                    if (selected.value === quizAnswers[`q${i}`]) {
+                        fb.textContent = 'Правильно!';
+                        fb.className = 'feedback green';
+                    } else {
+                        fb.textContent = 'Неправильно. Попробуй снова.';
+                        fb.className = 'feedback red';
+                        allCorrect = false;
+                    }
+                } else {
+                    allCorrect = false;
+                }
+            }
+            nextBtn.disabled = !allCorrect;
+        }
+
+        quizRadios.forEach(radio => {
+            radio.addEventListener('change', checkAnswers);
+        });
+
+        // Matrix Rain Background
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%+-/~{[|`]}';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array.from({ length: columns }, () => Math.random() * -canvas.height);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(18, 18, 18, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#39FF14';
+            ctx.font = `${fontSize}px monospace`;
+
+            drops.forEach((y, i) => {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+
+        setInterval(draw, 50);
+    </script>
+</body>
+</html>
